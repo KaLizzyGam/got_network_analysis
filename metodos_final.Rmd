@@ -81,11 +81,11 @@ La base de datos tiene 4 variables:
 
 ```{r, echo=F, message=F, warning=F}
 
-book1 <- read_csv("~/got/book1.csv")
-book2 <- read_csv("~/got/book2.csv")
-book3 <- read_csv("~/got/book3.csv")
-book4 <- read_csv("~/got/book4.csv")
-book5 <- read_csv("~/got/book5.csv")
+book1 <- read_csv("data/book1.csv")
+book2 <- read_csv("data/book2.csv")
+book3 <- read_csv("data/book3.csv")
+book4 <- read_csv("data/book4.csv")
+book5 <- read_csv("data/book5.csv")
 
 data <- rbind(book1, book2, book3, book4, book5)
 
@@ -139,7 +139,7 @@ edges <- data_ss %>% as_tibble()
     visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
     visLegend(main = 'value')
   
-  nw_ss_centrality
+  #nw_ss_centrality
 
   }
 ```
@@ -150,7 +150,9 @@ En la siguiente tabla se pueden ver los 10 personajes con mayor valor de central
 top_ss_centralidad <- nodes_centrality %>%   
   arrange(desc(value)) %>% 
   head(10) %>% 
-  select(id, value)
+  select(id, value) %>% 
+  rename(Personaje = id,
+         Centralidad = value)
 top_ss_centralidad
 ```
 
@@ -158,7 +160,6 @@ top_ss_centralidad
 
 ```{r, echo=F, message=F, warning=F}
 # BETWEENEESS
-
 {
   nodes_btw <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
     mutate(value = centrality_betweenness(),
@@ -189,7 +190,7 @@ top_ss_centralidad
     visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
     visLegend(main = 'value')
 
-nw_ss_btw
+#nw_ss_btw
 }
 ```
 
@@ -200,10 +201,114 @@ En la siguiente tabla se pueden ver los 10 personajes con mayor valor de interme
 top_ss_btw <- nodes_btw %>%
   arrange(desc(value)) %>% 
   head(10) %>% 
-  select(id, value)
+  select(id, value) %>% 
+  rename(Intermediación = value, 
+         Personaje = id)
 top_ss_btw
 ```
 
+#### Cercanía
+
+```{r, echo=F, message=F, warning=F}
+# CERCANIA
+
+{  
+  
+  nodes_cls <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+    mutate(value = centrality_closeness(normalized = TRUE),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_ss_cls <- visNetwork(nodes_cls, edges, height = "600px", width = "100%",
+                          main = paste("Analytics Methods: Game Of Thrones", season, "Network: Cercania")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'lightgreen', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+  #nw_ss_cls
+  
+}  
+```
+
+A continuación se pueden ver los 10 personajes con mayor valore de cercanía:   
+```{r, echo=F, message=F, warning=F}
+top_ss_cls<- nodes_cls %>% 
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select (id, value) %>% 
+  rename(Personaje = id,
+         Cercanía = value)
+top_ss_cls
+```
+
+#### Eigen
+```{r, echo=F, message=F, warning=F}
+{  
+  
+  nodes_eigen <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+    mutate(value = centrality_eigen(),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_ss_eigen <- visNetwork(nodes_eigen, edges, height = "600px", width = "100%",
+                          main = paste("Analytics Methods: Game Of Thrones", season, "Network: Eigen")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'wheat', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+  #nw_ss_eigen
+ 
+}  
+```
+
+A continuación se pueden ver los 10 personajes con mayor valor eigen:    
+```{r, echo=F, message=F, warning=F}
+ 
+top_ss_eigen <- nodes_eigen %>% 
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select(id, value) %>% 
+  rename(Personaje = id)
+
+top_ss_eigen
+  
+```
 
 
 ## A Clash of Kings (1998)
@@ -262,6 +367,162 @@ top_ss_centralidad <- nodes_centrality %>%
   select(id, value)
 top_ss_centralidad
 ```
+
+#### Betweeness o intermediación
+
+```{r, echo=F, message=F, warning=F}
+# BETWEENEESS
+{
+  nodes_btw <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+    mutate(value = centrality_betweenness(),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_ss_btw <- visNetwork(nodes_btw, edges, height = "600px", width = "100%",
+                                 main = paste("Analytics Methods: Game Of Thrones", season, "Network: Betweenness")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'lightblue', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+
+#nw_ss_btw
+}
+```
+
+
+En la siguiente tabla se pueden ver los 10 personajes con mayor valor de intermediación:   
+
+```{r}
+top_ss_btw <- nodes_btw %>%
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select(id, value) %>% 
+  rename(Intermediación = value, 
+         Personaje = id)
+top_ss_btw
+```
+
+#### Cercanía
+
+```{r, echo=F, message=F, warning=F}
+# CERCANIA
+
+{  
+  
+  nodes_cls <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+    mutate(value = centrality_closeness(normalized = TRUE),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_ss_cls <- visNetwork(nodes_cls, edges, height = "600px", width = "100%",
+                          main = paste("Analytics Methods: Game Of Thrones", season, "Network: Cercania")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'lightgreen', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+  #nw_ss_cls
+  
+}  
+```
+
+A continuación se pueden ver los 10 personajes con mayor valore de cercanía:   
+```{r, echo=F, message=F, warning=F}
+top_ss_cls<- nodes_cls %>% 
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select (id, value) %>% 
+  rename(Personaje = id,
+         Cercanía = value)
+top_ss_cls
+```
+
+#### Eigen
+```{r, echo=F, message=F, warning=F}
+{  
+  
+  nodes_eigen <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+    mutate(value = centrality_eigen(),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_ss_eigen <- visNetwork(nodes_eigen, edges, height = "600px", width = "100%",
+                          main = paste("Analytics Methods: Game Of Thrones", season, "Network: Eigen")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'wheat', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+  #nw_ss_eigen
+ 
+}  
+```
+
+A continuación se pueden ver los 10 personajes con mayor valor eigen:    
+```{r, echo=F, message=F, warning=F}
+ 
+top_ss_eigen <- nodes_eigen %>% 
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select(id, value) %>% 
+  rename(Personaje = id)
+
+top_ss_eigen
+  
+```
+
+
 ## A Storm of Swords (2000)
 
 #### Centralidad
@@ -318,6 +579,161 @@ top_ss_centralidad <- nodes_centrality %>%
   select(id, value)
 top_ss_centralidad
 ```
+
+#### Betweeness o intermediación
+
+```{r, echo=F, message=F, warning=F}
+# BETWEENEESS
+{
+  nodes_btw <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+    mutate(value = centrality_betweenness(),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_ss_btw <- visNetwork(nodes_btw, edges, height = "600px", width = "100%",
+                                 main = paste("Analytics Methods: Game Of Thrones", season, "Network: Betweenness")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'lightblue', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+
+#nw_ss_btw
+}
+```
+
+
+En la siguiente tabla se pueden ver los 10 personajes con mayor valor de intermediación:   
+
+```{r}
+top_ss_btw <- nodes_btw %>%
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select(id, value) %>% 
+  rename(Intermediación = value, 
+         Personaje = id)
+top_ss_btw
+```
+
+#### Cercanía
+
+```{r, echo=F, message=F, warning=F}
+# CERCANIA
+
+{  
+  
+  nodes_cls <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+    mutate(value = centrality_closeness(normalized = TRUE),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_ss_cls <- visNetwork(nodes_cls, edges, height = "600px", width = "100%",
+                          main = paste("Analytics Methods: Game Of Thrones", season, "Network: Cercania")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'lightgreen', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+  #nw_ss_cls
+  
+}  
+```
+
+A continuación se pueden ver los 10 personajes con mayor valore de cercanía:   
+```{r, echo=F, message=F, warning=F}
+top_ss_cls<- nodes_cls %>% 
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select (id, value) %>% 
+  rename(Personaje = id,
+         Cercanía = value)
+top_ss_cls
+```
+
+#### Eigen
+```{r, echo=F, message=F, warning=F}
+{  
+  
+  nodes_eigen <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+    mutate(value = centrality_eigen(),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_ss_eigen <- visNetwork(nodes_eigen, edges, height = "600px", width = "100%",
+                          main = paste("Analytics Methods: Game Of Thrones", season, "Network: Eigen")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'wheat', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+  #nw_ss_eigen
+ 
+}  
+```
+
+A continuación se pueden ver los 10 personajes con mayor valor eigen:    
+```{r, echo=F, message=F, warning=F}
+ 
+top_ss_eigen <- nodes_eigen %>% 
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select(id, value) %>% 
+  rename(Personaje = id)
+
+top_ss_eigen
+  
+```
+
 ## A Feast for Crows (2005)
 
 #### Centralidad
@@ -374,6 +790,161 @@ top_ss_centralidad <- nodes_centrality %>%
   select(id, value)
 top_ss_centralidad
 ```
+
+#### Betweeness o intermediación
+
+```{r, echo=F, message=F, warning=F}
+# BETWEENEESS
+{
+  nodes_btw <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+    mutate(value = centrality_betweenness(),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_ss_btw <- visNetwork(nodes_btw, edges, height = "600px", width = "100%",
+                                 main = paste("Analytics Methods: Game Of Thrones", season, "Network: Betweenness")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'lightblue', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+
+#nw_ss_btw
+}
+```
+
+
+En la siguiente tabla se pueden ver los 10 personajes con mayor valor de intermediación:   
+
+```{r}
+top_ss_btw <- nodes_btw %>%
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select(id, value) %>% 
+  rename(Intermediación = value, 
+         Personaje = id)
+top_ss_btw
+```
+
+#### Cercanía
+
+```{r, echo=F, message=F, warning=F}
+# CERCANIA
+
+{  
+  
+  nodes_cls <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+    mutate(value = centrality_closeness(normalized = TRUE),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_ss_cls <- visNetwork(nodes_cls, edges, height = "600px", width = "100%",
+                          main = paste("Analytics Methods: Game Of Thrones", season, "Network: Cercania")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'lightgreen', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+  #nw_ss_cls
+  
+}  
+```
+
+A continuación se pueden ver los 10 personajes con mayor valore de cercanía:   
+```{r, echo=F, message=F, warning=F}
+top_ss_cls<- nodes_cls %>% 
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select (id, value) %>% 
+  rename(Personaje = id,
+         Cercanía = value)
+top_ss_cls
+```
+
+#### Eigen
+```{r, echo=F, message=F, warning=F}
+{  
+  
+  nodes_eigen <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+    mutate(value = centrality_eigen(),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_ss_eigen <- visNetwork(nodes_eigen, edges, height = "600px", width = "100%",
+                          main = paste("Analytics Methods: Game Of Thrones", season, "Network: Eigen")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'wheat', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+  #nw_ss_eigen
+ 
+}  
+```
+
+A continuación se pueden ver los 10 personajes con mayor valor eigen:    
+```{r, echo=F, message=F, warning=F}
+ 
+top_ss_eigen <- nodes_eigen %>% 
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select(id, value) %>% 
+  rename(Personaje = id)
+
+top_ss_eigen
+  
+```
+
 ## A Dance with Dragons (2011)
 
 #### Centralidad
@@ -429,6 +1000,160 @@ top_ss_centralidad <- nodes_centrality %>%
   head(10) %>% 
   select(id, value)
 top_ss_centralidad
+```
+
+#### Betweeness o intermediación
+
+```{r, echo=F, message=F, warning=F}
+# BETWEENEESS
+{
+  nodes_btw <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+    mutate(value = centrality_betweenness(),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_ss_btw <- visNetwork(nodes_btw, edges, height = "600px", width = "100%",
+                                 main = paste("Analytics Methods: Game Of Thrones", season, "Network: Betweenness")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'lightblue', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+
+#nw_ss_btw
+}
+```
+
+
+En la siguiente tabla se pueden ver los 10 personajes con mayor valor de intermediación:   
+
+```{r}
+top_ss_btw <- nodes_btw %>%
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select(id, value) %>% 
+  rename(Intermediación = value, 
+         Personaje = id)
+top_ss_btw
+```
+
+#### Cercanía
+
+```{r, echo=F, message=F, warning=F}
+# CERCANIA
+
+{  
+  
+  nodes_cls <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+    mutate(value = centrality_closeness(normalized = TRUE),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_ss_cls <- visNetwork(nodes_cls, edges, height = "600px", width = "100%",
+                          main = paste("Analytics Methods: Game Of Thrones", season, "Network: Cercania")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'lightgreen', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+  #nw_ss_cls
+  
+}  
+```
+
+A continuación se pueden ver los 10 personajes con mayor valore de cercanía:   
+```{r, echo=F, message=F, warning=F}
+top_ss_cls<- nodes_cls %>% 
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select (id, value) %>% 
+  rename(Personaje = id,
+         Cercanía = value)
+top_ss_cls
+```
+
+#### Eigen
+```{r, echo=F, message=F, warning=F}
+{  
+  
+  nodes_eigen <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+    mutate(value = centrality_eigen(),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_ss_eigen <- visNetwork(nodes_eigen, edges, height = "600px", width = "100%",
+                          main = paste("Analytics Methods: Game Of Thrones", season, "Network: Eigen")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'wheat', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+  #nw_ss_eigen
+ 
+}  
+```
+
+A continuación se pueden ver los 10 personajes con mayor valor eigen:    
+```{r, echo=F, message=F, warning=F}
+ 
+top_ss_eigen <- nodes_eigen %>% 
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select(id, value) %>% 
+  rename(Personaje = id)
+
+top_ss_eigen
+  
 ```
 
 
