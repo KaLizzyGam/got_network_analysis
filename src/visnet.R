@@ -32,17 +32,19 @@ red_vis
 
 ###################
 
-data1 <- data %>% filter(book == 1) %>% filter(weight > 10)
+data1 <- data %>% filter(book == 1) %>% filter(weight > 20)
 
 nodes <- tidygraph::as_tbl_graph(data1, directed = FALSE) %>% 
   mutate(value = centrality_degree(),
-         value_btw = centrality_betweenness(),
+         value_btw = centrality_betweenness(directed = F),
+         value_cls = centrality_closeness(normalized = TRUE) ,
+         value_eigen = centrality_eigen(directed = F),
          id = name,
          title = name,
          ) %>% 
   as_tibble() %>% 
   rename(label = name) %>% 
-  select(id, label, title, value, value_btw)
+  select(id, label, title, value, value_btw, value_cls, value_eigen)
 
 cols <- colorRampPalette(c("red", "blue"))
 colores <- cols(length(nodes$value_btw))
@@ -51,14 +53,14 @@ nodes %<>% mutate(color = colores[rank(value_btw)])
 
 edges = data1
 
-visNetwork(nodes, edges, height = "800px", width = "100%",
+visNetwork(nodes, edges, height = "600px", width = "100%",
            main = "Analytics Methods: Game Of Thrones Network") %>% 
   #visInteraction(navigationButtons = TRUE) %>%
   visPhysics(
     solver = 'forceAtlas2Based', 
     stabilization = T,
     forceAtlas2Based = list(
-      gravitationalConstant = -20, # negativo!
+      gravitationalConstant = -20, 
       centralGravity = 0.01, 
       springLength = 100,
       springConstant = 0.08,
@@ -67,15 +69,50 @@ visNetwork(nodes, edges, height = "800px", width = "100%",
     ) %>% 
   visNodes(value = 1, scaling = list(min = 10, max = 60)) %>% 
   visEdges(color = "darkgray") %>% 
-  visOptions(highlightNearest = TRUE, nodesIdSelection = T)
+  visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+  visLegend(main = 'value')
 
 
+########### Grafica para solo centralidad
 
 
+nodes <- tidygraph::as_tbl_graph(data1, directed = FALSE) %>% 
+  mutate(value = centrality_degree(),
+         value_btw = centrality_betweenness(directed = F),
+         value_cls = centrality_closeness(normalized = TRUE) ,
+         value_eigen = centrality_eigen(directed = F),
+         id = name,
+         title = name,
+  ) %>% 
+  as_tibble() %>% 
+  rename(label = name) %>% 
+  select(id, label, title, value, value_btw, value_cls, value_eigen)
 
+cols <- colorRampPalette(c("red", "blue"))
+colores <- cols(length(nodes$value_btw))
 
+### nodes %<>% mutate(color = colores[rank(value_btw)])
 
+edges = data1
 
+visNetwork(nodes, edges, height = "600px", width = "100%",
+           main = "Analytics Methods: Game Of Thrones Network") %>% 
+  #visInteraction(navigationButtons = TRUE) %>%
+  visPhysics(
+    solver = 'forceAtlas2Based', 
+    stabilization = T,
+    forceAtlas2Based = list(
+      gravitationalConstant = -20, 
+      centralGravity = 0.01, 
+      springLength = 100,
+      springConstant = 0.08,
+      avoidOverlap = 0
+    )
+  ) %>% 
+  visNodes(value = 1, scaling = list(min = 10, max = 60)) %>% 
+  ### visEdges(color = "darkgray") %>% 
+  visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+  visLegend(main = 'value')
 
 
 
