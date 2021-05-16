@@ -14,7 +14,7 @@ data<- data_got %>%
   select (-Type) 
 
 
-# Seleccion de temporada 
+# SELECCION DE TEMPORADA
 
 season = 1
 data_ss = data %>% filter(book == season) %>% filter(weight >20)
@@ -103,7 +103,7 @@ edges <- data_ss %>% as_tibble()
 {  
   
   nodes_cls <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
-    mutate(value = ccentrality_closeness(normalized = TRUE),
+    mutate(value = centrality_closeness(normalized = TRUE),
            id = name,
            title = name,
     ) %>% 
@@ -145,7 +145,7 @@ edges <- data_ss %>% as_tibble()
 {  
   
   nodes_eigen <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
-    mutate(value = ccentrality_eigen(),
+    mutate(value = centrality_eigen(),
            id = name,
            title = name,
     ) %>% 
@@ -183,8 +183,7 @@ edges <- data_ss %>% as_tibble()
 
 
 
-
-
+# TODAS LAS TEMPORADAS
 
 
 
