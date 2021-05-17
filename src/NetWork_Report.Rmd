@@ -130,26 +130,27 @@ edges <- data_ss %>% as_tibble()
     select(id, label, title, value)
 
 
-  # nw_ss_centrality_1 <- visNetwork(nodes_centrality, edges, height = "600px", width = "100%",
-  #            main = paste("Analytics Methods: Game Of Thrones", season, "Network: Centralidad")) %>% 
-  #   #visInteraction(navigationButtons = TRUE) %>%
-  #   visPhysics(
-  #     solver = 'forceAtlas2Based', 
-  #     stabilization = T,
-  #     forceAtlas2Based = list(
-  #       gravitationalConstant = -20, 
-  #       centralGravity = 0.01, 
-  #       springLength = 100,
-  #       springConstant = 0.08,
-  #       avoidOverlap = 0
-  #     )
-  #   ) %>% 
-  #   visNodes(color = 'lightpink', value = 1, scaling = list(min = 10, max = 60)) %>% 
-  #   visEdges(color = "darkgray") %>% 
-  #   visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
-  #   visLegend(main = 'value')
-  # 
-  #nw_ss_centrality_1
+  nw_ss_centrality_1 <- visNetwork(nodes_centrality, edges, height = "600px", width = "100%",
+             main = paste("Analytics Methods: Game Of Thrones", season, "Network: Centralidad")) %>%
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based',
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20,
+        centralGravity = 0.01,
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>%
+    visNodes(color = 'lightpink', value = 1, scaling = list(min = 10, max = 60)) %>%
+    visEdges(color = "darkgray") %>%
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>%
+    visLegend(main = 'value')
+
+  nw_ss_centrality_1
+  
   htmltools::includeHTML('../img/nw_ss_centrality_1.html')
 
   }
@@ -1215,6 +1216,7 @@ names(top_centralidad)<- c("Personaje" ,
                           "Centralidad_S4",
                           "Centralidad_S5")
 top_centralidad
+
 
 
 
