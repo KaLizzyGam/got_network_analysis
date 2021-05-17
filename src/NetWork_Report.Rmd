@@ -1689,7 +1689,7 @@ library(scales)
 nodes$value_sdv <- comps_1$x[,1]
 nodes <- nodes %>% dplyr::mutate(value_sdv_sc = (value_sdv-min(value_sdv))/(max(value_sdv)-min(value_sdv)),
                                  value_sdv_sc = round(value_sdv_sc*40+10),
-                                 value_sdv_sc = case_when(
+                                 value = case_when(
                                    value_sdv_sc <= 44 ~10,
                                    value_sdv_sc <= 46 ~20,
                                    value_sdv_sc <= 46.5 ~30,
