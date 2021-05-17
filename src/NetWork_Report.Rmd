@@ -1690,12 +1690,12 @@ nodes$value_sdv <- comps_1$x[,1]
 nodes <- nodes %>% dplyr::mutate(value_sdv_sc = (value_sdv-min(value_sdv))/(max(value_sdv)-min(value_sdv)),
                                  value_sdv_sc = round(value_sdv_sc*40+10),
                                  value = case_when(
-                                   value_sdv_sc <= 44 ~10,
-                                   value_sdv_sc <= 46 ~20,
-                                   value_sdv_sc <= 46.5 ~30,
-                                   value_sdv_sc <= 47 ~40,
-                                   value_sdv_sc <= 48 ~50,
-                                   TRUE ~60
+                                   value_sdv_sc <= 44 ~90,
+                                   value_sdv_sc <= 46 ~75,
+                                   value_sdv_sc <= 46.5 ~60,
+                                   value_sdv_sc <= 47 ~45,
+                                   value_sdv_sc <= 48 ~30,
+                                   TRUE ~15
                                  ))
 DT::datatable(nodes)
 ```
