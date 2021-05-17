@@ -92,6 +92,7 @@ library(ggraph)
 library(magrittr)
 library(visNetwork)
 library(htmltools)
+library(DT)
 
 
 files <- list.files("../data", pattern = '.csv', full.names = T)
@@ -1203,82 +1204,145 @@ top_ss_eigen_5 %>% head(10)
 ```{r}
 
 
+rango_top_variable <- function(df, variable){
+  r <- df %>%
+   select(variable) %>%
+   drop_na() %>%
+   distinct() %>% 
+   pull() %>% 
+   sort(decreasing =T) %>% 
+   range()
+  return(r-.001 )
+}
+
+
+dibuja_tabla <- function(df, medida){
+  
+  
+  names(df)<- c("character" ,
+                paste0(medida,"S1"), 
+                paste0(medida,"S2"),
+                paste0(medida,"S3"),
+                paste0(medida,"S4"),
+                paste0(medida,"S5")) 
+  
+    names_df <-  names(df)
+
+    df_format<- datatable(df) %>%
+    formatStyle( names_df[2],
+                 color = styleInterval(rango_top_variable(df,2), c('black', 'blue', 'red'))
+    ) %>%
+    formatStyle(names_df[3],
+                color = styleInterval(rango_top_variable(df,3), c('black', 'blue', 'red'))
+    ) %>% 
+    formatStyle(names_df[4],
+                color = styleInterval(rango_top_variable(df,4), c('black', 'blue', 'red'))     
+    ) %>%
+    formatStyle(names_df[5],
+                color = styleInterval(rango_top_variable(df,5), c('black', 'blue', 'red'))
+    ) %>%
+    formatStyle(names_df[6],
+                color = styleInterval(rango_top_variable(df,6), c('black', 'blue', 'red'))
+     )
+    
+ df_format
+ 
+}
+
+
+
+
+
+```
+
+
+
+```{r}
+
 top_centralidad <- top_ss_centralidad_1 %>% 
   left_join(top_ss_centralidad_2, c("Personaje" = "id")) %>% 
   left_join(top_ss_centralidad_3, c("Personaje" = "id")) %>% 
   left_join(top_ss_centralidad_4, c("Personaje" = "id")) %>% 
   left_join(top_ss_centralidad_5, c("Personaje" = "id"))
     
-names(top_centralidad)<- c("Personaje" ,
-                          "Centralidad_S1",
-                          "Centralidad_S2",
-                          "Centralidad_S3",
-                          "Centralidad_S4",
-                          "Centralidad_S5")
-top_centralidad
 
-
-
-
+dibuja_tabla(top_centralidad, "Centrality")
 
 
 ```
 
+```{r}
 
-#```{r}
-files <- list.files("../data", pattern = '.csv', full.names = T)
-data_got <- files %>% map_df (read_csv)
-
-
-data <- data_got %>% 
-  rename (from = Source, to = Target) %>% 
-  select (-Type) 
-
-
-# Seleccion de temporada 
-
-season = 1
-data_ss = data %>% filter(book == season)
-
-edges <- data_ss %>% as_tibble()
-
-
-  # CENTRALIDAD
-
-{  
-  nodes_centrality <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
-    mutate(value = centrality_degree(),
-           id = name,
-           title = name,
-    ) %>% 
-    as_tibble() %>% 
-    rename(label = name) %>% 
-    select(id, label, title, value)
-
-
-  nw_ss_centrality <- visNetwork(nodes_centrality, edges, height = "600px", width = "100%",
-             main = paste("Analytics Methods: Game Of Thrones", season, "Network: Centralidad")) %>% 
-    #visInteraction(navigationButtons = TRUE) %>%
-    visPhysics(
-      solver = 'forceAtlas2Based', 
-      stabilization = T,
-      forceAtlas2Based = list(
-        gravitationalConstant = -20, 
-        centralGravity = 0.01, 
-        springLength = 100,
-        springConstant = 0.08,
-        avoidOverlap = 0
-      )
-    ) %>% 
-    visNodes(color = 'lightpink', value = 1, scaling = list(min = 10, max = 60)) %>% 
-    visEdges(color = "darkgray") %>% 
-    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
-    visLegend(main = 'value')
+top_btw <- top_ss_btw_1 %>% 
+  left_join(top_ss_btw_2, c("Personaje")) %>% 
+  left_join(top_ss_btw_3, c("Personaje")) %>% 
+  left_join(top_ss_btw_4, c("Personaje")) %>% 
+  left_join(top_ss_btw_5, c("Personaje"))
   
-  nw_ss_centrality
 
-  top_ss_centralidad <- nodes_centrality %>%   arrange(desc(value)) %>% head(10)
-  top_ss_centralidad
-  }
+top_btw<-top_btw %>% mutate_if(is.double, round,2)
+
+dibuja_tabla(top_btw, "Betwenness")
+
+
 ```
+```{r}
+
+top_cls <- top_ss_cls_1 %>% 
+  left_join(top_ss_cls_2, c("Personaje")) %>% 
+  left_join(top_ss_cls_3, c("Personaje")) %>% 
+  left_join(top_ss_cls_4, c("Personaje")) %>% 
+  left_join(top_ss_cls_5, c("Personaje"))
+  
+
+top_cls<-top_cls %>% mutate_if(is.double, round,2)
+
+dibuja_tabla(top_cls, "Closeness")
+
+
+```
+
+```{r}
+
+top_eigen <- top_ss_eigen_1 %>% 
+  left_join(top_ss_eigen_2, c("Personaje")) %>% 
+  left_join(top_ss_eigen_3, c("Personaje")) %>% 
+  left_join(top_ss_eigen_4, c("Personaje")) %>% 
+  left_join(top_ss_eigen_5, c("Personaje"))
+  
+
+top_eigen <- top_eigen %>% mutate_if(is.double, round,2)
+
+dibuja_tabla(top_eigen, "EigenCentrality")
+
+
+```
+
+
+```{r}
+data_totally 
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
