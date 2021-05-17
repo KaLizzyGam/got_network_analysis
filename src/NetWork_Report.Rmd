@@ -101,7 +101,6 @@ data <- data_got %>%
   select(-Type) 
 
 data %>% head()
-
 ``` 
 
 ## A Game of Thrones (1996)
@@ -173,7 +172,6 @@ En la siguiente tabla se pueden ver los 10 personajes con mayor valor de central
 
 top_ss_centralidad_1 <- nodes_centrality %>%   
   arrange(desc(value)) %>% 
- # head(10) %>% 
   select(id, value) %>% 
   rename(Personaje = id,
          Centralidad = value)
@@ -557,8 +555,6 @@ nodes_cls <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>%
       useGroups = F, 
       position = "right") %>% 
     addFontAwesome()
-
-
 ```
 
 
@@ -619,8 +615,6 @@ nodes_eigen <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>%
       useGroups = F, 
       position = "right") %>% 
     addFontAwesome()
-  
- 
 ```
 
 
@@ -759,8 +753,6 @@ top_ss_centralidad_3 %>% head(10)
       useGroups = F, 
       position = "right") %>% 
     addFontAwesome()
-
-nw_ss_btw_3
 ```
 
 
@@ -774,7 +766,6 @@ En la siguiente tabla se pueden ver los 10 personajes con mayor valor de interme
 ```{r}
 top_ss_btw_3 <- nodes_btw %>%
   arrange(desc(value)) %>% 
-  #head(10) %>% 
   select(id, value) %>% 
   rename(Intermediación = value, 
          Personaje = id)
@@ -1427,7 +1418,6 @@ nodes_eigen <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>%
       position = "right") %>% 
     addFontAwesome()
   
-  nw_ss_eigen_5
 ```
 
 
@@ -1456,7 +1446,7 @@ top_ss_eigen_5 %>% head(10)
 
 
 ```{r, echo=F}
-
+library(DT)
 
 rango_top_variable <- function(df, variable){
   r <- df %>%
@@ -1502,16 +1492,11 @@ dibuja_tabla <- function(df, medida){
  df_format
  
 }
-
-
-
-
-
 ```
 
 
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 
 top_centralidad <- top_ss_centralidad_1 %>% 
   left_join(top_ss_centralidad_2, c("Personaje" = "id")) %>% 
@@ -1521,8 +1506,6 @@ top_centralidad <- top_ss_centralidad_1 %>%
     
 
 dibuja_tabla(top_centralidad, "Centrality")
-
-
 ```
 
 
@@ -1586,9 +1569,6 @@ data <- data_got %>%
   dplyr::group_by(from, to) %>% 
   dplyr::summarise(weight = sum(weight), .groups = "drop")
 
-
-
-
 edges <- data %>% as_tibble() %>% mutate(value = weight)
 # CENTRALIDAD
 
@@ -1602,7 +1582,7 @@ nodes <- tidygraph::as_tbl_graph(data, directed = FALSE) %>%
   ) %>% 
   as_tibble() %>% 
   mutate(label = name, color.highlight.border = "black") %>% 
-  select(id, label, title, value, value_btw, value_cls, value_eigen,
+  select(id, label, title, name, value, value_btw, value_cls, value_eigen,
          color.highlight.border)
 
   cols <- colorRampPalette(c("red", "blue"))
@@ -1657,21 +1637,20 @@ htmltools::includeHTML('../img/nw_centralidad_btw.html')
 ```{r}
 data_all <- data %>%
     group_by(from, to) %>% 
-    summarise(weight= sum(weight))
-
-
+    summarise(weight = sum(weight), .groups = "drop")
 
 nodes <- tidygraph::as_tbl_graph(data_all, directed = FALSE) %>% 
   mutate(value_cty = centrality_degree(),
          value_btw = centrality_betweenness(directed = F),
          value_cls = centrality_closeness(normalized = TRUE) ,
          value_eigen = centrality_eigen(directed = F),
+         group = as.factor(group_fast_greedy(weight)),
          id = name,
          title = name,
   ) %>% 
   as_tibble() %>% 
-  rename(label = name) %>% 
-  select(id,  value_cty, value_btw, value_cls, value_eigen)
+  mutate(label = name) %>% 
+  select(id,  group, name, value_cty, value_btw, value_cls, value_eigen)
 
 
 DT::datatable(nodes)
@@ -1686,9 +1665,8 @@ library(factoextra)
 library(psych)
 library(corrplot)
 
-
 mat_cor <- cor(nodes %>% select(-id))
-corrplot(mat_cor, main = "Matriz de correlación",
+corrplot::corrplot(mat_cor, main = "Matriz de correlación",
          method = "number",
          tl.pos = "top",
          mar = c(2, 1, 3, 1)) 
@@ -1699,19 +1677,86 @@ corrplot(mat_cor, main = "Matriz de correlación",
 
 ```{r}
 comps_1  <- prcomp(nodes %>% select(-id), scale = TRUE)
-fviz_eig(comps_1 ,addlabels=TRUE, hjust = -0.3,  barfill="white", linecolor ="red") + theme_minimal()
+fviz_eig(comps_1 ,addlabels=TRUE, hjust = -0.3,  
+         barfill="white", linecolor = "red") + 
+  theme_minimal()
 ```
 
 
 ```{r}
 library(scales)
+
 nodes$value_sdv <- comps_1$x[,1]
-nodes <- nodes %>% mutate(value_sdv_sc = round(base::scale(value_sdv),0) )
+nodes <- nodes %>% dplyr::mutate(value_sdv_sc = (value_sdv-min(value_sdv))/(max(value_sdv)-min(value_sdv)),
+                                 value_sdv_sc = round(value_sdv_sc*40+10),
+                                 value_sdv_sc = case_when(
+                                   value_sdv_sc <= 44 ~10,
+                                   value_sdv_sc <= 46 ~20,
+                                   value_sdv_sc <= 46.5 ~30,
+                                   value_sdv_sc <= 47 ~40,
+                                   value_sdv_sc <= 48 ~50,
+                                   TRUE ~60
+                                 ))
 DT::datatable(nodes)
 ```
  
 
+```{r}
+cols <- colorRampPalette(rainbow(length(unique(nodes$group))))
+colores <- cols(length(nodes$group))
 
+nodes %<>% mutate(color = colores[rank(group)])
+edges = data_all %>% mutate(value = weight)
+col <- arrange(distinct(select(nodes, group, color)), group)
+
+legendNodesSize <- data.frame(
+  label = c(1,round((2:6)/6*60)), 
+  shape = "icon",
+  icon.code = 'f111', 
+  icon.size = (1:6)*15, 
+  icon.color = "gray"
+)
+
+network <- visNetwork(
+    nodes, edges, height = "600px", width = "100%",
+    main = "Analytics Methods: Game Of Thrones Network Community & Importance Created") %>% 
+  visPhysics(
+    solver = 'forceAtlas2Based', 
+    stabilization = T,
+    forceAtlas2Based = list(
+      gravitationalConstant = -20, 
+      centralGravity = 0.01, 
+      springLength = 100,
+      springConstant = 0.08,
+      avoidOverlap = 0
+      )) %>% 
+  visNodes(
+    value = 1, scaling = list(min = 10, max = 50),
+    labelHighlightBold = T, borderWidth = 2) %>% 
+  visEdges(color = "darkgray") %>% 
+  visOptions(highlightNearest = TRUE, selectedBy = "name")
+
+for (i in 1:length(unique(nodes$group))) {
+  network <- network %>% 
+    visGroups(
+      groupname = as.character(i),
+      color = col[i,2]$color
+    )
+}
+
+network <- network %>% 
+  visLegend(
+    main = 'Community Groups & Importance Level', 
+    addNodes = legendNodesSize,
+    useGroups = T, 
+    position = "right") %>% 
+  addFontAwesome()
+
+```
+
+```{r, echo=F, message=F, warning=F, echo=FALSE}
+htmltools::includeHTML('../img/network.html')
+```
 
 
 
