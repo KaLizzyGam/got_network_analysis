@@ -1650,7 +1650,7 @@ nodes <- tidygraph::as_tbl_graph(data_all, directed = FALSE) %>%
   ) %>% 
   as_tibble() %>% 
   mutate(label = name) %>% 
-  select(id,  group, name, value_cty, value_btw, value_cls, value_eigen)
+  select(id,  label, title, group, name, value_cty, value_btw, value_cls, value_eigen)
 
 
 DT::datatable(nodes)
@@ -1665,7 +1665,7 @@ library(factoextra)
 library(psych)
 library(corrplot)
 
-mat_cor <- cor(nodes %>% select(-id))
+mat_cor <- cor(nodes %>% select(-id, -label, -title, -name, -group))
 corrplot::corrplot(mat_cor, main = "Matriz de correlación",
          method = "number",
          tl.pos = "top",
@@ -1676,7 +1676,7 @@ corrplot::corrplot(mat_cor, main = "Matriz de correlación",
 
 
 ```{r}
-comps_1  <- prcomp(nodes %>% select(-id), scale = TRUE)
+comps_1 <- prcomp(nodes %>% select(-id, -label, -title, -name, -group), scale = TRUE)
 fviz_eig(comps_1 ,addlabels=TRUE, hjust = -0.3,  
          barfill="white", linecolor = "red") + 
   theme_minimal()
@@ -1690,12 +1690,12 @@ nodes$value_sdv <- comps_1$x[,1]
 nodes <- nodes %>% dplyr::mutate(value_sdv_sc = (value_sdv-min(value_sdv))/(max(value_sdv)-min(value_sdv)),
                                  value_sdv_sc = round(value_sdv_sc*40+10),
                                  value = case_when(
-                                   value_sdv_sc <= 44 ~90,
-                                   value_sdv_sc <= 46 ~75,
-                                   value_sdv_sc <= 46.5 ~60,
-                                   value_sdv_sc <= 47 ~45,
-                                   value_sdv_sc <= 48 ~30,
-                                   TRUE ~15
+                                   value_sdv_sc <= 44 ~60,
+                                   value_sdv_sc <= 46 ~15,
+                                   value_sdv_sc <= 46.5 ~15,
+                                   value_sdv_sc <= 47 ~15,
+                                   value_sdv_sc <= 48 ~10,
+                                   TRUE ~10
                                  ))
 DT::datatable(nodes)
 ```
@@ -1719,7 +1719,7 @@ legendNodesSize <- data.frame(
 
 network <- visNetwork(
     nodes, edges, height = "600px", width = "100%",
-    main = "Analytics Methods: Game Of Thrones Network Community & Importance Created") %>% 
+    main = "Analytics Methods: Game Of Thrones Network | Community & Importance Created") %>% 
   visPhysics(
     solver = 'forceAtlas2Based', 
     stabilization = T,
