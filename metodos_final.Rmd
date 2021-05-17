@@ -1,6 +1,9 @@
 ---
 title: 'Análisis de redes: Game of Thrones'
-author: "Arturo  Lizzy   Víctor"
+author: 
+ - Oscar Arturo  
+ - Karina Lizette   
+ - Víctor Erasto 97105
 date: "17/5/2021"
 output:
   prettydoc::html_pretty:
@@ -25,7 +28,7 @@ Identificar la importancia de los personajes en la saga de libros *A Song of Ice
 
 ### Objetivos particulares
 - Conocer a los personajes que tiene mayor importancia de acuerdo a las medidas de centralidad
-- Ver el cambio de importancia de personajes entre libros
+- Ver el cambio de importancia de personajes entre los libros de la saga
 - Identificar si la importancia de los personajes cambia dependiendo de las medidas de centralidad
 - 
 
@@ -61,9 +64,11 @@ donde
 
 Definición: qué tan lejos en promedio están los otros nodos de la red. 
 
-Éste se calcula como el inverso del promedio de distancias del nodo a todos los demás.
+Ésta medida se calcula como el inverso del promedio de distancias del nodo a todos los demás.
 
-$$ \frac{1 \sum{}}$$
+$$C (x) = \frac{1}{\sum_{y} d(x, y)}$$
+donde $$d(y, x)$$ es la distancia entre los nodos x y y   
+
 #### Centralidad de eigenvector/Pagerank
 
 Definición: la centralidad de un nodo es una especie de promedio de la centralidad de sus vecinos. Esta medida considera que la importancia de un nodo está dado por la suma normalizada de las importancias de sus vecinos. De esta forma, es importante estar cercano a nodos importantes (como en cercanía), pero también cuenta conectarse a muchos nodos (como en grado).
@@ -75,7 +80,7 @@ Fuente: [Kaggle](https://www.kaggle.com/mmmarchetti/game-of-thrones-network-anal
 
 La base de datos tiene 4 variables:  
 - Source: un nodo en la red    
-- Target: nodo nodo en la red     
+- Target: un nodo en la red     
 - Weight: número de interacciones que los personajes tienen   
 - Book: el libro al que pertenece la interacción     
 
@@ -153,7 +158,11 @@ top_ss_centralidad <- nodes_centrality %>%
   select(id, value) %>% 
   rename(Personaje = id,
          Centralidad = value)
-top_ss_centralidad
+
+top_ss_centralidad %>% 
+  ggplot(aes(y = reorder(Personaje, Centralidad), x = Centralidad)) + 
+  geom_col() + ylab("Personaje")
+
 ```
 
 #### Betweeness o intermediación
@@ -197,14 +206,17 @@ top_ss_centralidad
 
 En la siguiente tabla se pueden ver los 10 personajes con mayor valor de intermediación:   
 
-```{r}
+```{r, echo=F, message=F, warning=F}
 top_ss_btw <- nodes_btw %>%
   arrange(desc(value)) %>% 
   head(10) %>% 
   select(id, value) %>% 
   rename(Intermediación = value, 
          Personaje = id)
-top_ss_btw
+
+top_ss_btw %>% 
+  ggplot(aes(y = reorder(Personaje, Intermediación), x = Intermediación)) + 
+  geom_col() + ylab("Personaje")
 ```
 
 #### Cercanía
@@ -248,7 +260,7 @@ top_ss_btw
 }  
 ```
 
-A continuación se pueden ver los 10 personajes con mayor valore de cercanía:   
+A continuación se pueden ver los 10 personajes con mayor valor de cercanía:   
 ```{r, echo=F, message=F, warning=F}
 top_ss_cls<- nodes_cls %>% 
   arrange(desc(value)) %>% 
@@ -256,7 +268,10 @@ top_ss_cls<- nodes_cls %>%
   select (id, value) %>% 
   rename(Personaje = id,
          Cercanía = value)
-top_ss_cls
+
+top_ss_cls%>% 
+  ggplot(aes(y = reorder(Personaje, Cercanía), x = Cercanía)) + 
+  geom_col() + ylab("Personaje")
 ```
 
 #### Eigen
@@ -304,9 +319,12 @@ top_ss_eigen <- nodes_eigen %>%
   arrange(desc(value)) %>% 
   head(10) %>% 
   select(id, value) %>% 
-  rename(Personaje = id)
+  rename(Personaje = id,
+         Eigen = value)
 
-top_ss_eigen
+top_ss_eigen %>% 
+  ggplot(aes(y = reorder(Personaje, Eigen), x = Eigen)) + 
+  geom_col() + ylab("Personaje")
   
 ```
 
@@ -353,7 +371,7 @@ edges <- data_ss %>% as_tibble()
     visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
     visLegend(main = 'value')
   
-  nw_ss_centrality
+  #nw_ss_centrality
 
   }
 ```
@@ -364,13 +382,19 @@ En la siguiente tabla se pueden ver los 10 personajes con mayor valor de central
 top_ss_centralidad <- nodes_centrality %>%   
   arrange(desc(value)) %>% 
   head(10) %>% 
-  select(id, value)
-top_ss_centralidad
+  select(id, value) %>% 
+  rename(Personaje = id,
+         Centralidad = value)
+
+top_ss_centralidad %>% 
+  ggplot(aes(y = reorder(Personaje, Centralidad), x = Centralidad)) + 
+  geom_col() + ylab("Personaje")
 ```
 
 #### Betweeness o intermediación
 
-```{r, echo=F, message=F, warning=F}
+```{r, echo=F, message=F, warning=F} 
+
 # BETWEENEESS
 {
   nodes_btw <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
@@ -409,14 +433,17 @@ top_ss_centralidad
 
 En la siguiente tabla se pueden ver los 10 personajes con mayor valor de intermediación:   
 
-```{r}
+```{r, echo=F, message=F, warning=F}
 top_ss_btw <- nodes_btw %>%
   arrange(desc(value)) %>% 
   head(10) %>% 
   select(id, value) %>% 
   rename(Intermediación = value, 
          Personaje = id)
-top_ss_btw
+
+top_ss_btw %>% 
+  ggplot(aes(y = reorder(Personaje, Intermediación), x = Intermediación)) + 
+  geom_col() + ylab("Personaje")
 ```
 
 #### Cercanía
@@ -460,7 +487,7 @@ top_ss_btw
 }  
 ```
 
-A continuación se pueden ver los 10 personajes con mayor valore de cercanía:   
+A continuación se pueden ver los 10 personajes con mayor valor de cercanía:   
 ```{r, echo=F, message=F, warning=F}
 top_ss_cls<- nodes_cls %>% 
   arrange(desc(value)) %>% 
@@ -468,7 +495,10 @@ top_ss_cls<- nodes_cls %>%
   select (id, value) %>% 
   rename(Personaje = id,
          Cercanía = value)
-top_ss_cls
+
+top_ss_cls %>% 
+  ggplot(aes(y = reorder(Personaje, Cercanía), x = Cercanía)) + 
+  geom_col() + ylab("Personaje")
 ```
 
 #### Eigen
@@ -516,9 +546,12 @@ top_ss_eigen <- nodes_eigen %>%
   arrange(desc(value)) %>% 
   head(10) %>% 
   select(id, value) %>% 
-  rename(Personaje = id)
+  rename(Personaje = id, 
+         Eigen = value)
 
-top_ss_eigen
+top_ss_eigen %>% 
+  ggplot(aes(y = reorder(Personaje, Eigen), x = Eigen)) + 
+  geom_col() + ylab("Personaje")
   
 ```
 
@@ -565,7 +598,7 @@ edges <- data_ss %>% as_tibble()
     visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
     visLegend(main = 'value')
   
-  nw_ss_centrality
+  #nw_ss_centrality
 
   }
 ```
@@ -576,8 +609,14 @@ En la siguiente tabla se pueden ver los 10 personajes con mayor valor de central
 top_ss_centralidad <- nodes_centrality %>%   
   arrange(desc(value)) %>% 
   head(10) %>% 
-  select(id, value)
-top_ss_centralidad
+  select(id, value) %>% 
+  rename(Personaje = id, 
+         Centralidad = value)
+
+top_ss_centralidad %>% 
+  ggplot(aes(y = reorder(Personaje, Centralidad), x = Centralidad)) + 
+  geom_col() + ylab("Personaje")
+
 ```
 
 #### Betweeness o intermediación
@@ -628,7 +667,10 @@ top_ss_btw <- nodes_btw %>%
   select(id, value) %>% 
   rename(Intermediación = value, 
          Personaje = id)
-top_ss_btw
+
+top_ss_btw %>% 
+  ggplot(aes(y = reorder(Personaje, Intermediación), x = Intermediación)) + 
+  geom_col() + ylab("Personaje")
 ```
 
 #### Cercanía
@@ -672,7 +714,7 @@ top_ss_btw
 }  
 ```
 
-A continuación se pueden ver los 10 personajes con mayor valore de cercanía:   
+A continuación se pueden ver los 10 personajes con mayor valor de cercanía:   
 ```{r, echo=F, message=F, warning=F}
 top_ss_cls<- nodes_cls %>% 
   arrange(desc(value)) %>% 
@@ -680,7 +722,10 @@ top_ss_cls<- nodes_cls %>%
   select (id, value) %>% 
   rename(Personaje = id,
          Cercanía = value)
-top_ss_cls
+
+top_ss_cls %>% 
+  ggplot(aes(y = reorder(Personaje, Cercanía), x = Cercanía)) + 
+  geom_col() + ylab("Personaje")
 ```
 
 #### Eigen
@@ -728,9 +773,12 @@ top_ss_eigen <- nodes_eigen %>%
   arrange(desc(value)) %>% 
   head(10) %>% 
   select(id, value) %>% 
-  rename(Personaje = id)
+  rename(Personaje = id, 
+         Eigen = value)
 
-top_ss_eigen
+top_ss_eigen %>% 
+  ggplot(aes(y = reorder(Personaje, Eigen), x = Eigen)) + 
+  geom_col() + ylab("Personaje")
   
 ```
 
@@ -776,7 +824,7 @@ edges <- data_ss %>% as_tibble()
     visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
     visLegend(main = 'value')
   
-  nw_ss_centrality
+  #nw_ss_centrality
 
   }
 ```
@@ -787,8 +835,13 @@ En la siguiente tabla se pueden ver los 10 personajes con mayor valor de central
 top_ss_centralidad <- nodes_centrality %>%   
   arrange(desc(value)) %>% 
   head(10) %>% 
-  select(id, value)
-top_ss_centralidad
+  select(id, value) %>% 
+  rename(Personaje = id, 
+         Centralidad = value)
+
+top_ss_centralidad %>% 
+  ggplot(aes(y = reorder(Personaje, Centralidad), x = Centralidad)) + 
+  geom_col() + ylab("Personaje")
 ```
 
 #### Betweeness o intermediación
@@ -832,14 +885,17 @@ top_ss_centralidad
 
 En la siguiente tabla se pueden ver los 10 personajes con mayor valor de intermediación:   
 
-```{r}
+```{r, echo=F, message=F, warning=F}
 top_ss_btw <- nodes_btw %>%
   arrange(desc(value)) %>% 
   head(10) %>% 
   select(id, value) %>% 
   rename(Intermediación = value, 
          Personaje = id)
-top_ss_btw
+
+top_ss_btw %>% 
+  ggplot(aes(y = reorder(Personaje, Intermediación), x = Intermediación)) + 
+  geom_col() + ylab("Personaje")
 ```
 
 #### Cercanía
@@ -883,7 +939,7 @@ top_ss_btw
 }  
 ```
 
-A continuación se pueden ver los 10 personajes con mayor valore de cercanía:   
+A continuación se pueden ver los 10 personajes con mayor valor de cercanía:   
 ```{r, echo=F, message=F, warning=F}
 top_ss_cls<- nodes_cls %>% 
   arrange(desc(value)) %>% 
@@ -891,7 +947,10 @@ top_ss_cls<- nodes_cls %>%
   select (id, value) %>% 
   rename(Personaje = id,
          Cercanía = value)
-top_ss_cls
+
+top_ss_cls %>% 
+  ggplot(aes(y = reorder(Personaje, Cercanía), x = Cercanía)) + 
+  geom_col() + ylab("Personaje")
 ```
 
 #### Eigen
@@ -939,9 +998,12 @@ top_ss_eigen <- nodes_eigen %>%
   arrange(desc(value)) %>% 
   head(10) %>% 
   select(id, value) %>% 
-  rename(Personaje = id)
+  rename(Personaje = id, 
+         Eigen = value)
 
-top_ss_eigen
+top_ss_eigen %>% 
+  ggplot(aes(y = reorder(Personaje, Eigen), x = Eigen)) + 
+  geom_col() + ylab("Personaje")
   
 ```
 
@@ -987,7 +1049,7 @@ edges <- data_ss %>% as_tibble()
     visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
     visLegend(main = 'value')
   
-  nw_ss_centrality
+  #nw_ss_centrality
 
   }
 ```
@@ -998,8 +1060,13 @@ En la siguiente tabla se pueden ver los 10 personajes con mayor valor de central
 top_ss_centralidad <- nodes_centrality %>%   
   arrange(desc(value)) %>% 
   head(10) %>% 
-  select(id, value)
-top_ss_centralidad
+  select(id, value) %>% 
+  rename(Personaje = id, 
+         Centralidad = value)
+
+top_ss_centralidad %>% 
+  ggplot(aes(y = reorder(Personaje, Centralidad), x = Centralidad)) + 
+  geom_col() + ylab("Personaje")
 ```
 
 #### Betweeness o intermediación
@@ -1043,14 +1110,17 @@ top_ss_centralidad
 
 En la siguiente tabla se pueden ver los 10 personajes con mayor valor de intermediación:   
 
-```{r}
+```{r, echo=F, message=F, warning=F}
 top_ss_btw <- nodes_btw %>%
   arrange(desc(value)) %>% 
   head(10) %>% 
   select(id, value) %>% 
   rename(Intermediación = value, 
          Personaje = id)
-top_ss_btw
+
+top_ss_btw %>% 
+  ggplot(aes(y = reorder(Personaje, Intermediación), x = Intermediación)) + 
+  geom_col() + ylab("Personaje")
 ```
 
 #### Cercanía
@@ -1094,7 +1164,7 @@ top_ss_btw
 }  
 ```
 
-A continuación se pueden ver los 10 personajes con mayor valore de cercanía:   
+A continuación se pueden ver los 10 personajes con mayor valor de cercanía:   
 ```{r, echo=F, message=F, warning=F}
 top_ss_cls<- nodes_cls %>% 
   arrange(desc(value)) %>% 
@@ -1102,7 +1172,10 @@ top_ss_cls<- nodes_cls %>%
   select (id, value) %>% 
   rename(Personaje = id,
          Cercanía = value)
-top_ss_cls
+
+top_ss_cls %>% 
+  ggplot(aes(y = reorder(Personaje, Cercanía), x = Cercanía)) + 
+  geom_col() + ylab("Personaje")
 ```
 
 #### Eigen
@@ -1150,56 +1223,24 @@ top_ss_eigen <- nodes_eigen %>%
   arrange(desc(value)) %>% 
   head(10) %>% 
   select(id, value) %>% 
-  rename(Personaje = id)
+  rename(Personaje = id, 
+         Eigen = value)
 
-top_ss_eigen
+top_ss_eigen %>% 
+  ggplot(aes(y = reorder(Personaje, Eigen), x = Eigen)) + 
+  geom_col() + ylab("Personaje")
   
 ```
 
 
-## R Markdown
+## Análisis conjunto de la saga completa
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-
-#```{r}
-files <- list.files("../data", pattern = '.csv', full.names = T)
-data_got <- files %>% map_df (read_csv)
-
-
-data <- data_got %>% 
-  rename (from = Source, to = Target) %>% 
-  select (-Type) 
-
-
-# Seleccion de temporada 
-
-season = 1
-data_ss = data %>% filter(book == season)
-
-edges <- data_ss %>% as_tibble()
-
-
-  # CENTRALIDAD
+#### Centralidad
+```{r, echo=F, message=F, warning=F}
+edges <- data %>% as_tibble()
 
 {  
-  nodes_centrality <- tidygraph::as_tbl_graph(data_ss, directed = FALSE) %>% 
+  nodes_centrality <- tidygraph::as_tbl_graph(data, directed = FALSE) %>% 
     mutate(value = centrality_degree(),
            id = name,
            title = name,
@@ -1207,10 +1248,10 @@ edges <- data_ss %>% as_tibble()
     as_tibble() %>% 
     rename(label = name) %>% 
     select(id, label, title, value)
-
-
-  nw_ss_centrality <- visNetwork(nodes_centrality, edges, height = "600px", width = "100%",
-             main = paste("Analytics Methods: Game Of Thrones", season, "Network: Centralidad")) %>% 
+  
+  
+  nw_centrality <- visNetwork(nodes_centrality, edges, height = "600px", width = "100%",
+                                 main = paste("Analytics Methods: Game Of Thrones", "", "Network: Centralidad")) %>% 
     #visInteraction(navigationButtons = TRUE) %>%
     visPhysics(
       solver = 'forceAtlas2Based', 
@@ -1223,15 +1264,274 @@ edges <- data_ss %>% as_tibble()
         avoidOverlap = 0
       )
     ) %>% 
-    visNodes(color = 'pupple', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visNodes(color = 'lightpink', value = 1, scaling = list(min = 10, max = 60)) %>% 
     visEdges(color = "darkgray") %>% 
     visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
     visLegend(main = 'value')
   
-  nw_ss_centrality
+  #nw_centrality
+  
+  
+}
+```
 
-  top_ss_centralidad <- nodes_centrality %>%   arrange(desc(value)) %>% head(10)
-  top_ss_centralidad
-  }
+```{r, echo=F, message=F, warning=F}
+top_centralidad <- nodes_centrality %>% 
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select(id, value) %>% 
+  rename(Personaje = id, 
+         Centralidad = value)
+
+top_centralidad %>% 
+  ggplot(aes(y = reorder(Personaje, Centralidad), x = Centralidad)) + 
+  geom_col() + ylab("Personaje")
+  
+```
+
+#### Intermediación
+
+```{r, echo=F, message=F, warning=F}
+{
+  nodes_btw <- tidygraph::as_tbl_graph(data, directed = FALSE) %>% 
+    mutate(value = centrality_betweenness(),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_btw <- visNetwork(nodes_btw, edges, height = "600px", width = "100%",
+                          main = paste("Analytics Methods: Game Of Thrones", "", "Network: Betweenness")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'lightblue', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+  #nw_btw
+
+}
+
+```
+
+```{r, echo=F, message=F, warning=F}
+  
+  top_btw <- nodes_btw %>% 
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select(id, value) %>% 
+  rename(Intermediación = value, 
+         Personaje = id)
+
+top_btw %>% 
+  ggplot(aes(y = reorder(Personaje, Intermediación), x = Intermediación)) + 
+  geom_col() + ylab("Personaje")
+
+
+  
+```
+
+#### Cercanía
+```{r, echo=F, message=F, warning=F}
+{  
+  
+  nodes_cls <- tidygraph::as_tbl_graph(data, directed = FALSE) %>% 
+    mutate(value = centrality_closeness(normalized = TRUE),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_cls <- visNetwork(nodes_cls, edges, height = "600px", width = "100%",
+                          main = paste("Analytics Methods: Game Of Thrones", "", "Network: Cercania")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'lightgreen', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+  #nw_cls
+  
+
+}  
+
+```
+
+```{r, echo=F, message=F, warning=F}
+top_cls<- nodes_cls %>% 
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select (id, value) %>% 
+  rename(Personaje = id,
+         Cercanía = value)
+
+top_cls %>% 
+  ggplot(aes(y = reorder(Personaje, Cercanía), x = Cercanía)) + 
+  geom_col() + ylab("Personaje")
+
+
+```
+
+#### Eigen
+
+```{r, echo=F, message=F, warning=F}
+{  
+  
+  nodes_eigen <- tidygraph::as_tbl_graph(data, directed = FALSE) %>% 
+    mutate(value = centrality_eigen(),
+           id = name,
+           title = name,
+    ) %>% 
+    as_tibble() %>% 
+    rename(label = name) %>% 
+    select(id, label, title, value)
+  
+  
+  nw_eigen <- visNetwork(nodes_eigen, edges, height = "600px", width = "100%",
+                            main = paste("Analytics Methods: Game Of Thrones", "", "Network: Eigen")) %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(color = 'wheat', value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+  #nw_eigen
+  
+ 
+  
+}  
+```
+
+```{r, echo=F, message=F, warning=F}
+top_eigen <- nodes_eigen %>%  
+  arrange(desc(value)) %>% 
+  head(10) %>% 
+  select(id, value) %>% 
+  rename(Personaje = id, 
+         Eigen = value)
+
+top_eigen %>% 
+  ggplot(aes(y = reorder(Personaje, Eigen), x = Eigen)) + 
+  geom_col() + ylab("Personaje")
+
+
+```
+
+
+
+A continuación podemos ver un gráfico donde se analiza la centralidad y la intermediación de los personajes   
+
+```{r, echo=F, message=F, warning=F}
+nodes <- tidygraph::as_tbl_graph(data, directed = FALSE) %>% 
+  mutate(value = centrality_degree(),
+         value_btw = centrality_betweenness(directed = F),
+         value_cls = centrality_closeness(normalized = TRUE) ,
+         value_eigen = centrality_eigen(directed = F),
+         id = name,
+         title = name,
+  ) %>% 
+  as_tibble() %>% 
+  rename(label = name) %>% 
+  select(id, label, title, value, value_btw, value_cls, value_eigen)
+
+
+  cols <- colorRampPalette(c("red", "blue"))
+  colores <- cols(length(nodes$value_btw))
+  nodes %<>% mutate(color = colores[rank(value_btw)])
+
+  nw_centralidad_btw <- visNetwork(nodes, edges, height = "600px", width = "100%",
+           main = "Analytics Methods: Game Of Thrones Network \n
+           Centralidad y Betweenness") %>% 
+  #visInteraction(navigationButtons = TRUE) %>%
+  visPhysics(
+    solver = 'forceAtlas2Based', 
+    stabilization = T,
+    forceAtlas2Based = list(
+      gravitationalConstant = -20, 
+      centralGravity = 0.01, 
+      springLength = 100,
+      springConstant = 0.08,
+      avoidOverlap = 0
+    )
+  ) %>% 
+  visNodes(value = 1, scaling = list(min = 10, max = 60)) %>% 
+  visEdges(color = "darkgray") %>% 
+  visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+  visLegend(main = 'value')
+
+  #nw_centralidad_btw
+```
+
+A continuación podemos ver un gráfico donde se analiza la centralidad y el valor eigen de los personajes   
+
+```{r, echo=F, message=F, warning=F}
+
+  cols <- colorRampPalette(c("pink", "blue"))
+  colores <- cols(length(nodes$value_eigen))
+  nodes %<>% mutate(color = colores[rank(value_eigen)])
+  
+  
+  nw_centralidad_eigen <- visNetwork(nodes, edges, height = "600px", width = "100%",
+             main = "Analytics Methods: Game Of Thrones Network \n
+             Centralidad y Eigen") %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+
+  #nw_centralidad_eigen
+
 ```
 
