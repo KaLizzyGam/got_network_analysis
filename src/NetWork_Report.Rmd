@@ -1319,15 +1319,67 @@ dibuja_tabla(top_eigen, "EigenCentrality")
 ```
 
 
+
+## Descomposición matricial de rango 1
+
+
 ```{r}
-data_totally 
+data_all <- data %>%
+    group_by(from, to) %>% 
+    summarise(weight= sum(weight))
+
+
+
+nodes <- tidygraph::as_tbl_graph(data_all, directed = FALSE) %>% 
+  mutate(value_cty = centrality_degree(),
+         value_btw = centrality_betweenness(directed = F),
+         value_cls = centrality_closeness(normalized = TRUE) ,
+         value_eigen = centrality_eigen(directed = F),
+         id = name,
+         title = name,
+  ) %>% 
+  as_tibble() %>% 
+  rename(label = name) %>% 
+  select(id,  value_cty, value_btw, value_cls, value_eigen)
+
+
+nodes
+
+
+
+```
+
+
+```{r}
+library(FactoMineR)
+library(factoextra)
+library(psych)
+
+
+mat_cor <- cor(nodes %>% select(-id))
+corrplot(mat_cor, main = "Matriz de correlación",
+         method = "number",
+         tl.pos = "top",
+         mar = c(2, 1, 3, 1)) 
+
 
 ```
 
 
 
+```{r}
+comps_1  <- prcomp(nodes %>% select(-id), scale = TRUE)
+fviz_eig(comps_1 ,addlabels=TRUE, hjust = -0.3,  barfill="white", linecolor ="red") + theme_minimal()
+```
 
 
+```{r}
+library(scales)
+nodes$value_sdv <- comps_1$x[,1]
+nodes <- nodes %>% mutate(value_sdv_sc = round(base::scale(value_sdv),0) )
+nodes
+```
+ 
 
 
 
