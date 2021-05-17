@@ -24,13 +24,18 @@ library(visNetwork)
 
 
 ## Objetivo general
-Identificar la importancia de los personajes en la saga de libros *A Song of Ice and Fire* escrita por George R. R. Martin por medio de un análisis de redes.
+Identificar la importancia de los personajes en la saga de libros *A Song of Ice and Fire* escrita por George R. R. Martin por medio de un análisis de redes
 
-### Objetivos particulares
+### Objetivos particulares del proyecto:
 - Conocer a los personajes que tiene mayor importancia de acuerdo a las medidas de centralidad
 - Ver el cambio de importancia de personajes entre libros
 - Identificar si la importancia de los personajes cambia dependiendo de las medidas de centralidad
-- 
+
+
+### Temas aplicados dentro del proyecto:
+- Análisis de redes y medidas de centralidad
+- Detección de comunidades -
+- Descomposición en Valores Signulares
 
 
 ## Metodología
@@ -1508,6 +1513,8 @@ top_centralidad <- top_ss_centralidad_1 %>%
 dibuja_tabla(top_centralidad, "Centrality")
 ```
 
+### Por Betwenness: 
+
 
 ```{r}
 
@@ -1526,6 +1533,8 @@ dibuja_tabla(top_btw, "Betwenness")
 ```
 
 
+### Por Closeness: 
+
 ```{r}
 
 top_cls <- top_ss_cls_1 %>% 
@@ -1543,6 +1552,9 @@ dibuja_tabla(top_cls, "Closeness")
 ```
 
 
+### Por Eigen: 
+
+
 ```{r}
 top_eigen <- top_ss_eigen_1 %>% 
   left_join(top_ss_eigen_2, c("Personaje")) %>% 
@@ -1557,6 +1569,8 @@ dibuja_tabla(top_eigen, "EigenCentrality")
 
 
 ```
+
+### Análisis conjunto (todos los libros)  Betwenness & Eigen: 
 
 ```{r, eval=TRUE}
 
@@ -1629,9 +1643,8 @@ htmltools::includeHTML('../img/nw_centralidad_btw.html')
 ```
 
 
-
-
 ## Descomposición matricial de rango 1
+
 
 
 ```{r}
@@ -1653,7 +1666,7 @@ nodes <- tidygraph::as_tbl_graph(data_all, directed = FALSE) %>%
   select(id,  label, title, group, name, value_cty, value_btw, value_cls, value_eigen)
 
 
-DT::datatable(nodes)
+DT::datatable(nodes %>% mutate_if(is.numeric, round, 3))
 
 
 ```
@@ -1697,9 +1710,13 @@ nodes <- nodes %>% dplyr::mutate(value_sdv_sc = (value_sdv-min(value_sdv))/(max(
                                    value_sdv_sc <= 48 ~10,
                                    TRUE ~10
                                  ))
-DT::datatable(nodes)
+
+
+DT::datatable(nodes %>%  mutate_if(is.numeric, round, 3))
 ```
  
+
+##  Detección de comunidades y estimación de importancia
 
 ```{r}
 cols <- colorRampPalette(rainbow(length(unique(nodes$group))))
@@ -1752,7 +1769,10 @@ network <- network %>%
     position = "right") %>% 
   addFontAwesome()
 
+#network
 ```
+
+
 
 ```{r, echo=F, message=F, warning=F, echo=FALSE}
 htmltools::includeHTML('../img/network.html')
