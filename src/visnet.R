@@ -19,10 +19,10 @@ red_tbl
 ###################
 
 data1 <- data %>% 
-  filter(book == 1) %>% 
+  #filter(book == 1) %>% 
   dplyr::group_by(from, to) %>% 
-  summarise(weight = sum(weight), .groups = "drop") #%>% 
-  filter(weight > 20)
+  summarise(weight = sum(weight), .groups = "drop") %>% 
+  filter(weight > 5)
 
 nodes <- tidygraph::as_tbl_graph(data1, directed = FALSE) %>% 
   mutate(value = centrality_degree(),
