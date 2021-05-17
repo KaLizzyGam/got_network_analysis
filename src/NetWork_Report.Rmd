@@ -1461,7 +1461,6 @@ top_ss_eigen_5 %>% head(10)
 
 ```{r}
 
-
 top_centralidad <- top_ss_centralidad_1 %>% 
   left_join(top_ss_centralidad_2, c("Personaje" = "id")) %>% 
   left_join(top_ss_centralidad_3, c("Personaje" = "id")) %>% 
@@ -1475,12 +1474,6 @@ names(top_centralidad) <- c("Personaje" ,
                           "Centralidad_S4",
                           "Centralidad_S5")
 top_centralidad
-
-
-
-
-
-
 ```
 
 
@@ -1501,25 +1494,34 @@ edges <- data %>% as_tibble() %>% mutate(value = weight)
 
 # CENTRALIDAD
 
-nodes_centrality <- tidygraph::as_tbl_graph(data, directed = FALSE) %>% 
-    mutate(value = centrality_degree(),
-           id = name,
-           title = name) %>% 
-    as_tibble() %>% 
-    mutate(label = name, color.highlight.border = "black") %>% 
-    select(id, label, title, name, value, color.highlight.border)
+nodes <- tidygraph::as_tbl_graph(data, directed = FALSE) %>% 
+  mutate(value = centrality_degree(),
+         value_btw = centrality_betweenness(directed = F),
+         value_cls = centrality_closeness(normalized = TRUE) ,
+         value_eigen = centrality_eigen(directed = F),
+         id = name,
+         title = name,
+  ) %>% 
+  as_tibble() %>% 
+  mutate(label = name, color.highlight.border = "black") %>% 
+  select(id, label, title, value, value_btw, value_cls, value_eigen,
+         color.highlight.border)
+
+  cols <- colorRampPalette(c("red", "blue"))
+  colores <- cols(length(nodes$value_btw))
+  nodes %<>% mutate(color = colores[rank(value_btw)])
 
 legendNodesSize <- data.frame(
-    label = c(1,round((2:6)/6*max(nodes_centrality$value))), 
+    label = c(1,round((2:6)/6*max(nodes$value))), 
     shape = "icon",
     icon.code = 'f111', 
     icon.size = (1:6)*10, 
-    icon.color = "lightpink"
+    icon.color = "gray"
   )
 
-nw_ss_centrality <- visNetwork(
-      nodes_centrality, edges, height = "600px", width = "100%",
-      main = paste("Analytics Methods: Game Of Thrones", season, "Network: Centrality")) %>%
+nw_centralidad_btw <- visNetwork(
+      nodes, edges, height = "600px", width = "100%",
+      main = "Analytics Methods: Game Of Thrones Network: \n Centrality & Betweenness") %>%
     visPhysics(
       solver = 'forceAtlas2Based',
       stabilization = T,
@@ -1530,7 +1532,7 @@ nw_ss_centrality <- visNetwork(
         springConstant = 0.08,
         avoidOverlap = 0)
       ) %>%
-    visNodes(color = 'lightpink', value = 1, scaling = list(min = 10, max = 50),
+    visNodes(value = 1, scaling = list(min = 10, max = 50),
              labelHighlightBold = T, borderWidth = 1) %>%
     visEdges(color = "darkgray") %>%
     visOptions(highlightNearest = TRUE, selectedBy = "name") %>% 
@@ -1541,8 +1543,48 @@ nw_ss_centrality <- visNetwork(
       position = "right") %>% 
     addFontAwesome()
   
-nw_ss_centrality
+nw_centralidad_btw
 ```
+
+```{r, echo=F, message=F, warning=F, echo=FALSE}
+htmltools::includeHTML('../img/nw_centralidad_btw.html')
+```
+
+
+
+```{r}
+  cols <- colorRampPalette(c("pink", "blue"))
+  colores <- cols(length(nodes$value_eigen))
+  nodes %<>% mutate(color = colores[rank(value_eigen)])
+  
+  
+  nw_centralidad_eigen <- visNetwork(nodes, edges, height = "600px", width = "100%",
+             main = "Analytics Methods: Game Of Thrones Network \n
+             Centralidad y Eigen") %>% 
+    #visInteraction(navigationButtons = TRUE) %>%
+    visPhysics(
+      solver = 'forceAtlas2Based', 
+      stabilization = T,
+      forceAtlas2Based = list(
+        gravitationalConstant = -20, 
+        centralGravity = 0.01, 
+        springLength = 100,
+        springConstant = 0.08,
+        avoidOverlap = 0
+      )
+    ) %>% 
+    visNodes(value = 1, scaling = list(min = 10, max = 60)) %>% 
+    visEdges(color = "darkgray") %>% 
+    visOptions(highlightNearest = TRUE, nodesIdSelection = T) %>% 
+    visLegend(main = 'value')
+  
+
+  nw_centralidad_eigen
+```
+
+
+
+
 
 ```{r, echo=F, message=F, warning=F, echo=FALSE}
 htmltools::includeHTML('../img/nw_ss_centrality.html')
